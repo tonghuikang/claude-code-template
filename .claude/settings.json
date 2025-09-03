@@ -1,0 +1,58 @@
+{
+  "env": {
+    "BASH_MAX_OUTPUT_LENGTH": "100000",
+    "BASH_DEFAULT_TIMEOUT_MS": "2000000"
+  },
+  "includeCoAuthoredBy": false,
+  "permissions": {
+    "allow": [
+      "mcp__puppeteer__puppeteer_navigate",
+      "mcp__puppeteer__puppeteer_screenshot",
+      "mcp__puppeteer__puppeteer_click",
+      "mcp__puppeteer__puppeteer_fill",
+      "mcp__puppeteer__puppeteer_evaluate",
+      "mcp__puppeteer__puppeteer_select",
+      "mcp__puppeteer__puppeteer_hover",
+      "WebFetch",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(lsof:*)",
+      "Bash(curl:*)"
+    ],
+    "deny": [
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "puppeteer"
+  ],
+  "hooks": {
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "say requesting permissions &"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "say operation complete &"
+          },
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/checklist.py"
+          }
+        ]
+      }
+    ]
+  }
+}
