@@ -12,6 +12,13 @@ Check that you
 - did not silently fail
 - tested your changes
     - if you have made changes since your last change you have to test again
+    - if html files are involved you have to use Puppeteer to test
+
+List all the requirements from the user.
+Enumerate over all the requirements from the user
+- and write down HOW did you fulfil the requirement.
+
+If you did not address anything, stop enumerating the checklist and address it immediately.
 """
 
 input_data = json.load(sys.stdin)
