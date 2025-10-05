@@ -34,7 +34,8 @@ def test_main_user_prompt_submit():
         return_value={
             "hook_event_name": "UserPromptSubmit",
             "tool_name": "",
-            "tool_input": {"prompt": "run ruff on my code"},
+            "tool_input": {},
+            "prompt": "run ruff on my code",
         },
     ):
         with mock.patch(
@@ -43,7 +44,7 @@ def test_main_user_prompt_submit():
             with pytest.raises(SystemExit) as exc:
                 main()
             mock_validator.assert_called_once_with("run ruff on my code")
-            assert exc.value.code == 1
+            assert exc.value.code == 0
 
 
 # Tests for PreToolUse hooks
@@ -157,7 +158,9 @@ def test_main_no_issues():
         },
     ):
         with mock.patch("process_hooks.validate_after_execution", return_value=[]):
-            main()  # Should complete without raising
+            with pytest.raises(SystemExit) as exc:
+                main()
+            assert exc.value.code == 0
 
 
 def test_main_empty_command():
@@ -170,7 +173,9 @@ def test_main_empty_command():
             "tool_input": {"command": ""},
         },
     ):
-        main()  # Should complete without raising
+        with pytest.raises(SystemExit) as exc:
+            main()
+        assert exc.value.code == 0
 
 
 def test_main_unknown_hook():
@@ -183,4 +188,6 @@ def test_main_unknown_hook():
             "tool_input": {},
         },
     ):
-        main()  # Should complete without raising
+        with pytest.raises(SystemExit) as exc:
+            main()
+        assert exc.value.code == 0

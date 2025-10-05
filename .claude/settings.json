@@ -24,6 +24,16 @@
     "enableAllProjectMcpServers": true,
     "enabledMcpjsonServers": ["puppeteer"],
     "hooks": {
+        "UserPromptSubmit": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/process_hooks.py"
+                    }
+                ]
+            }
+        ],
         "PreToolUse": [
             {
                 "matcher": "Bash",

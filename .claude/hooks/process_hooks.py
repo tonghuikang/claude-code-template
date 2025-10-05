@@ -36,15 +36,16 @@ def main():
     tool_name = input_data.get("tool_name", "")
     tool_input = input_data.get("tool_input", {})
 
+    exit_zero_messages = []
     exit_one_messages = []
     exit_two_messages = []
 
     # Route to appropriate validator based on hook_event_name + tool_name
     # Hook lifecycle: UserPromptSubmit -> PreToolUse -> PostToolUse -> Stop
     if hook_event_name == "UserPromptSubmit":
-        prompt = tool_input.get("prompt", "")
+        prompt = input_data.get("prompt", "")
         if prompt:
-            exit_one_messages = validate_user_prompt(prompt)
+            exit_zero_messages = validate_user_prompt(prompt)
 
     elif hook_event_name == "PreToolUse" and tool_name == "Bash":
         command = tool_input.get("command", "")
@@ -71,6 +72,9 @@ def main():
         if transcript_path:
             exit_two_messages = validate_stop(transcript_path)
 
+    for exit_zero_message in exit_zero_messages:
+        print(exit_zero_message, file=sys.stdout)
+
     for exit_one_message in exit_one_messages:
         print(exit_one_message, file=sys.stderr)
 
@@ -84,6 +88,8 @@ def main():
         sys.exit(2)
     if exit_one_messages:
         sys.exit(1)
+
+    sys.exit(0)
 
 
 if __name__ == "__main__":
