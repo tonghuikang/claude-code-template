@@ -12,7 +12,7 @@ Traditionally, you would insert all these instructions into CLAUDE.md in some lo
 However, I see many problems with solely depending on CLAUDE.md:
 
 - CLAUDE.md should be maintained by one 'benevolent dictator', for reasons that would soon be obvious.
-    The dictator will need to manipulate the masses' trust and strongarm their way into authority.
+    The dictator will need to obtain the required trust and authority.
     The dictator will need to solicit change proposals to CLAUDE.md and reject many of them.
 - Instructions are open to interpretation.
     For example, you have an instruction on avoiding exceptions.
@@ -22,7 +22,7 @@ However, I see many problems with solely depending on CLAUDE.md:
     It is possible to write a consistent guideline on exceptions, but it will take many words.
     The more comprehensive your guidelines, the more tokens you pay for on every single request.
     Every word in CLAUDE.md is overhead that you pay repeatedly.
-- Instructions usually cost performance tradeoffs.
+- Instructions can break other instructions.
     The longer the instructions, the more likely there are instructions that are not followed.
     You do not want your colleagues to suspect that a recent addition to CLAUDE.md has caused Claude Code to not follow instructions that were previously followed.
 - Instructions need to be tested.
