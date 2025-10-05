@@ -53,19 +53,22 @@ Runs before Bash commands are executed.
 ### 3. PostToolUse (Edit/Write)
 Runs after Edit or Write operations.
 
-**Example:** Validates content
-- Catches `except Exception`, `TYPE_CHECKING`
+**Example:** Enforces code quality standards
+- Blocks broad `except Exception` statements, suggests specific exceptions
+- Discourages `if TYPE_CHECKING:` patterns
 
 ### 4. PostToolUse (Bash)
 Runs after Bash commands are executed.
 
-**Example:** Validates commands after execution
+**Example:** Detects chained commands with `&&`
+- Suggests running commands individually instead of chaining them
 
 ### 5. Stop
 Runs when Claude finishes responding.
 
-**Example:** Validates transcript for required actions
-- Checks if necessary follow-up steps were completed
+**Example:** Enforces test-driven workflow after code changes
+- Checks if Bash commands were run after Edit/Write operations
+- Requires confirmation phrase "I have addressed every query from the user."
 
 ## Example Query
 
