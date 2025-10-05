@@ -42,6 +42,11 @@ def test_stop_validator_with_edits_and_confirmation():
                     "input": {"command": "pytest"},
                 },
                 {
+                    "type": "tool_use",
+                    "name": "TodoWrite",
+                    "input": {"todos": [{"content": "Test task", "status": "completed", "activeForm": "Testing task"}]},
+                },
+                {
                     "type": "text",
                     "text": "I have addressed every query from the user.",
                 },

@@ -11,24 +11,36 @@ Traditionally, you would insert all these instructions into CLAUDE.md in some lo
 
 However, I see many problems with solely depending on CLAUDE.md:
 
-- CLAUDE.md needs to be maintained by one 'benevolent dictator'.
-    The dictator will need to obtain the trust and authority from the organization.
+- CLAUDE.md should be maintained by one 'benevolent dictator', for reasons that would soon be obvious.
+    The dictator will need to manipulate the masses' trust and strongarm their way into authority.
     The dictator will need to solicit change proposals to CLAUDE.md and reject many of them.
-    The dictator will need to be aware of contradictions within the instructions.
-- The longer the instructions, the more likely there are instructions that are not followed.
+- Instructions are open to interpretation.
+    For example, you have an instruction on avoiding exceptions.
+    Does this mean to avoid all exceptions? Or some of them?
+    The codebase is already full of exceptions - should they serve as a reference?
+- Instructions cost money.
+    It is possible to write a consistent guideline on exceptions, but it will take many words.
+    The more comprehensive your guidelines, the more tokens you pay for on every single request.
+    Every word in CLAUDE.md is overhead that you pay repeatedly.
+- Instructions usually cost performance tradeoffs.
+    The longer the instructions, the more likely there are instructions that are not followed.
     You do not want your colleagues to suspect that a recent addition to CLAUDE.md has caused Claude Code to not follow instructions that were previously followed.
-- Testing is needed, and it takes time and is incomplete.
+- Instructions need to be tested.
     When you add an instruction to CLAUDE.md, you need to make sure you are not breaking other instructions.
     You can test either with an evaluation suite that you need to invest in, or you can try the new version of CLAUDE.md for a period of time.
     Even with testing, issues may arise.
 - Models will improve.
-    Many instructions you add to CLAUDE.md to fix the deficiencies of the model may be irrelevant with a model upgrade.
-    In fact, these redundant instructions might harm the performance of your coding tool.
+    Your instructions to CLAUDE.md to fix the deficiencies of the model may be irrelevant with a model upgrade.
+    For example, the current model may be using too many exceptions.
+    You write strong instructions so that the model will use an appropriate level of exceptions.
+    A new version of the model arrives, it may have an optimal taste on exceptions on an empty CLAUDE.md file.
+    However, your old prompt now forces the model to unnecessarily avoid exceptions.
+    These now redundant instructions harm the performance of your coding tool.
 
 
 Therefore, instead of overloading CLAUDE.md with instructions that are not easily tested, you should deliver instructions at places where they are most relevant.
 
-Claude Code hooks allow us to execute commands at certain points of the agentic coding lifecycle.
+Claude Code hooks allow us to execute commands to deliver information at certain points of the agentic coding lifecycle.
 
 This is a template for you to easily configure Claude Code hooks.
 
@@ -71,6 +83,8 @@ Runs when Claude finishes responding.
 - Requires confirmation phrase "I have addressed every query from the user."
 
 ## Example Query
+
+You can start Claude Code in this repository and provide the following query
 
 ```
 move the "Bash(grep)" check from pre bash to post bash

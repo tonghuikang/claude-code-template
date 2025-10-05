@@ -16,6 +16,10 @@ You will
 1) Enumerate over every requirement from the user
     - State the requirement
     - Cite the user instruction
+    - Add to the todo `TodoWrite` tool
+
+2) Check whether the user instruction is followed
+    - For each item in the todo list
     - Reason whether you have addressed the requirement
 
 If you have made edits, you will ALSO
@@ -26,11 +30,11 @@ If you have made edits, you will ALSO
     - Run the test.
 2) Run the formatter
     - See CLAUDE.md for instructions
-
-When done without errors, end your reply with `{PHRASE_TO_CHECK}`.
 """
 
 BASH_AFTER_EDIT_REMINDER = "It seems that you did not run bash after your last edit."
+
+TODO_AFTER_EDIT_REMINDER = "It seems that you did not use the TodoWrite tool after your last edit."
 
 
 def validate_stop(transcript_path: str) -> list[str]:
@@ -41,6 +45,7 @@ def validate_stop(transcript_path: str) -> list[str]:
         lines = f.readlines()
         has_edits = False
         ran_bash_after_edit = False
+        use_todo_after_edit = False
         for line in lines[::-1]:  # from the last message
             transcript = json.loads(line)
             if transcript["type"] == "assistant":
@@ -50,24 +55,17 @@ def validate_stop(transcript_path: str) -> list[str]:
                             has_edits = True
                         if content["name"] == "Bash":
                             ran_bash_after_edit = True
+                        if content["name"] == "TodoWrite":
+                            use_todo_after_edit = True
             if has_edits:
                 break
 
-        if has_edits and not ran_bash_after_edit:
-            issues.append(CHECKING_INSTRUCTIONS)
-            issues.append(BASH_AFTER_EDIT_REMINDER)
-            return issues
-
         if has_edits:
-            # check for phrase_to_check
-            for line in lines[::-1][:1]:  # check only the last message
-                transcript = json.loads(line)
-                if transcript["type"] == "assistant":
-                    for content in transcript["message"]["content"]:
-                        if "text" in content:
-                            assistant_message = content["text"]
-                            if PHRASE_TO_CHECK in assistant_message:
-                                return []
-                    issues.append(CHECKING_INSTRUCTIONS)
+            if (not ran_bash_after_edit) or (not use_todo_after_edit):
+                issues.append(CHECKING_INSTRUCTIONS)
+            if not ran_bash_after_edit:
+                issues.append(BASH_AFTER_EDIT_REMINDER)
+            if not use_todo_after_edit:
+                issues.append(TODO_AFTER_EDIT_REMINDER)
 
     return issues
