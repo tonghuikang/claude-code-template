@@ -1,12 +1,12 @@
 import json
-import sys
 import tempfile
 from pathlib import Path
-from unittest import mock
+
+from stop_validator import validate_stop
 
 
-def test_checklist_no_edits():
-    """Test that checklist exits successfully when no edits are made"""
+def test_stop_validator_no_edits():
+    """Test that stop_validator returns no issues when no edits are made"""
     transcript_data = {
         "type": "assistant",
         "message": {
@@ -19,26 +19,14 @@ def test_checklist_no_edits():
         transcript_path = f.name
 
     try:
-        input_data = {"transcript_path": transcript_path}
-        with mock.patch("sys.stdin"):
-            with mock.patch("json.load", return_value=input_data):
-                # Run the checklist script directly
-                import subprocess
-
-                result = subprocess.run(
-                    [sys.executable, ".claude/checklist.py"],
-                    input=json.dumps(input_data),
-                    capture_output=True,
-                    text=True,
-                )
-                # Should exit 0 or complete without error when no edits
-                assert result.returncode in [0, None]
+        issues = validate_stop(transcript_path)
+        assert issues == []
     finally:
         Path(transcript_path).unlink()
 
 
-def test_checklist_with_edits_and_confirmation():
-    """Test that checklist exits successfully when edits are made and confirmation phrase is present"""
+def test_stop_validator_with_edits_and_confirmation():
+    """Test that stop_validator returns no issues when edits are made with bash and confirmation phrase"""
     transcript_data = {
         "type": "assistant",
         "message": {
@@ -47,6 +35,11 @@ def test_checklist_with_edits_and_confirmation():
                     "type": "tool_use",
                     "name": "Edit",
                     "input": {"old_string": "foo", "new_string": "bar"},
+                },
+                {
+                    "type": "tool_use",
+                    "name": "Bash",
+                    "input": {"command": "pytest"},
                 },
                 {
                     "type": "text",
@@ -61,22 +54,14 @@ def test_checklist_with_edits_and_confirmation():
         transcript_path = f.name
 
     try:
-        input_data = {"transcript_path": transcript_path}
-        import subprocess
-
-        result = subprocess.run(
-            [sys.executable, ".claude/checklist.py"],
-            input=json.dumps(input_data),
-            capture_output=True,
-            text=True,
-        )
-        assert result.returncode == 0
+        issues = validate_stop(transcript_path)
+        assert issues == []
     finally:
         Path(transcript_path).unlink()
 
 
-def test_checklist_with_edits_no_confirmation():
-    """Test that checklist exits with error when edits are made but confirmation phrase is missing"""
+def test_stop_validator_with_edits_no_confirmation():
+    """Test that stop_validator returns issues when edits are made but confirmation phrase is missing"""
     transcript_data = {
         "type": "assistant",
         "message": {
@@ -85,6 +70,11 @@ def test_checklist_with_edits_no_confirmation():
                     "type": "tool_use",
                     "name": "Edit",
                     "input": {"old_string": "foo", "new_string": "bar"},
+                },
+                {
+                    "type": "tool_use",
+                    "name": "Bash",
+                    "input": {"command": "pytest"},
                 },
                 {"type": "text", "text": "Some other text without the confirmation"},
             ]
@@ -96,15 +86,8 @@ def test_checklist_with_edits_no_confirmation():
         transcript_path = f.name
 
     try:
-        input_data = {"transcript_path": transcript_path}
-        import subprocess
-
-        result = subprocess.run(
-            [sys.executable, ".claude/checklist.py"],
-            input=json.dumps(input_data),
-            capture_output=True,
-            text=True,
-        )
-        assert result.returncode == 2
+        issues = validate_stop(transcript_path)
+        assert len(issues) > 0
+        assert "Review your work" in issues[0]
     finally:
         Path(transcript_path).unlink()
