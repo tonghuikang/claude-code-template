@@ -2,10 +2,10 @@
 
 These are some rules you might want to impose on your coding agent:
 
-- If asked to `ruff`, you should read a set of instructions
-- Do not use Bash(grep), use the Grep tool instead
-- Do not write `except Exception as e`
-- After every edit, you will need to run a formatter
+- If asked to `ruff`, the coding agent should read a set of instructions
+- The coding agent should not use Bash(grep), and should use the Grep tool instead
+- The coding agent should not write `except Exception as e`
+- After every edit, the coding agent will need to run a formatter
 
 Traditionally, you would insert all these instructions into CLAUDE.md in some logical order.
 
