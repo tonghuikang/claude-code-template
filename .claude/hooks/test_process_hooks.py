@@ -94,7 +94,10 @@ def test_main_post_edit():
         return_value={
             "hook_event_name": "PostToolUse",
             "tool_name": "Edit",
-            "tool_input": {"new_string": "except Exception: pass"},
+            "tool_input": {
+                "new_string": "except Exception: pass",
+                "file_path": "test.py",
+            },
         },
     ):
         with mock.patch(
@@ -102,7 +105,7 @@ def test_main_post_edit():
         ) as mock_validator:
             with pytest.raises(SystemExit) as exc:
                 main()
-            mock_validator.assert_called_once_with("except Exception: pass")
+            mock_validator.assert_called_once_with("except Exception: pass", "test.py")
             assert exc.value.code == 2
 
 
@@ -113,7 +116,7 @@ def test_main_post_write():
         return_value={
             "hook_event_name": "PostToolUse",
             "tool_name": "Write",
-            "tool_input": {"content": "if TYPE_CHECKING:"},
+            "tool_input": {"content": "if TYPE_CHECKING:", "file_path": "test.py"},
         },
     ):
         with mock.patch(
@@ -121,7 +124,7 @@ def test_main_post_write():
         ) as mock_validator:
             with pytest.raises(SystemExit) as exc:
                 main()
-            mock_validator.assert_called_once_with("if TYPE_CHECKING:")
+            mock_validator.assert_called_once_with("if TYPE_CHECKING:", "test.py")
             assert exc.value.code == 2
 
 

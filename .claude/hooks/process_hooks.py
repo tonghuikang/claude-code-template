@@ -44,34 +44,31 @@ def main():
     # Hook lifecycle: UserPromptSubmit -> PreToolUse -> PostToolUse -> Stop
     if hook_event_name == "UserPromptSubmit":
         prompt = input_data.get("prompt", "")
-        if prompt:
-            exit_zero_messages = validate_user_prompt(prompt)
+        exit_zero_messages = validate_user_prompt(prompt)
 
     elif hook_event_name == "PreToolUse" and tool_name == "Bash":
         command = tool_input.get("command", "")
-        if command:
-            exit_two_messages = validate_before_execution(command)
+        exit_two_messages = validate_before_execution(command)
 
     elif hook_event_name == "PostToolUse" and tool_name == "Edit":
         content = tool_input.get("new_string", "")
-        if content:
-            exit_two_messages = validate_content(content)
+        filepath = tool_input.get("file_path", "")
+        exit_two_messages = validate_content(content, filepath)
 
     elif hook_event_name == "PostToolUse" and tool_name == "Write":
         content = tool_input.get("content", "")
-        if content:
-            exit_two_messages = validate_content(content)
+        filepath = tool_input.get("file_path", "")
+        exit_two_messages = validate_content(content, filepath)
 
     elif hook_event_name == "PostToolUse" and tool_name == "Bash":
         command = tool_input.get("command", "")
-        if command:
-            exit_two_messages = validate_after_execution(command)
+        exit_two_messages = validate_after_execution(command)
 
     elif hook_event_name == "Stop":
         transcript_path = input_data.get("transcript_path", "")
-        if transcript_path:
-            exit_two_messages = validate_stop(transcript_path)
+        exit_two_messages = validate_stop(transcript_path)
 
+    # Print messages
     for exit_zero_message in exit_zero_messages:
         print(exit_zero_message, file=sys.stdout)
 

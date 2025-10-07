@@ -8,7 +8,7 @@ import json
 
 PHRASE_TO_CHECK = "I have addressed every query from the user."
 
-CHECKING_INSTRUCTIONS = f"""
+CHECKING_INSTRUCTIONS = """
 Review your work.
 
 You will
@@ -34,7 +34,9 @@ If you have made edits, you will ALSO
 
 BASH_AFTER_EDIT_REMINDER = "It seems that you did not run bash after your last edit."
 
-TODO_AFTER_EDIT_REMINDER = "It seems that you did not use the TodoWrite tool after your last edit."
+TODO_AFTER_EDIT_REMINDER = (
+    "It seems that you did not use the TodoWrite tool after your last edit."
+)
 
 
 def validate_stop(transcript_path: str) -> list[str]:
