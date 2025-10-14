@@ -5,7 +5,7 @@ Validates bash commands after execution.
 """
 
 
-def validate_after_execution(command: str) -> list[str]:
+def validate_bash_command(command: str) -> list[str]:
     """Validate bash command after execution."""
     issues = []
 

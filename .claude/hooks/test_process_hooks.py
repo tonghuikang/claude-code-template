@@ -79,7 +79,7 @@ def test_main_post_bash():
         },
     ):
         with mock.patch(
-            "process_hooks.validate_after_execution", return_value=["Use Grep tool"]
+            "process_hooks.validate_bash_command", return_value=["Use Grep tool"]
         ) as mock_validator:
             with pytest.raises(SystemExit) as exc:
                 main()
@@ -95,17 +95,21 @@ def test_main_post_edit():
             "hook_event_name": "PostToolUse",
             "tool_name": "Edit",
             "tool_input": {
+                "old_string": "old code",
                 "new_string": "except Exception: pass",
                 "file_path": "test.py",
             },
         },
     ):
         with mock.patch(
-            "process_hooks.validate_content", return_value=["Catch specific exception"]
+            "process_hooks.validate_edit_content",
+            return_value=["Catch specific exception"],
         ) as mock_validator:
             with pytest.raises(SystemExit) as exc:
                 main()
-            mock_validator.assert_called_once_with("except Exception: pass", "test.py")
+            mock_validator.assert_called_once_with(
+                "old code", "except Exception: pass", "test.py"
+            )
             assert exc.value.code == 2
 
 
@@ -120,11 +124,11 @@ def test_main_post_write():
         },
     ):
         with mock.patch(
-            "process_hooks.validate_content", return_value=["Avoid TYPE_CHECKING"]
+            "process_hooks.validate_edit_content", return_value=["Avoid TYPE_CHECKING"]
         ) as mock_validator:
             with pytest.raises(SystemExit) as exc:
                 main()
-            mock_validator.assert_called_once_with("if TYPE_CHECKING:", "test.py")
+            mock_validator.assert_called_once_with("", "if TYPE_CHECKING:", "test.py")
             assert exc.value.code == 2
 
 
@@ -160,7 +164,7 @@ def test_main_no_issues():
             "tool_input": {"command": "pwd"},
         },
     ):
-        with mock.patch("process_hooks.validate_after_execution", return_value=[]):
+        with mock.patch("process_hooks.validate_bash_command", return_value=[]):
             with pytest.raises(SystemExit) as exc:
                 main()
             assert exc.value.code == 0

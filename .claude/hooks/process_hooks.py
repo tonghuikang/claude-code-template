@@ -10,8 +10,11 @@ https://github.com/anthropics/claude-code/tree/main/examples/hooks
 import json
 import sys
 
-from post_bash_validator import validate_after_execution
-from post_edit_validator import validate_content
+from pydantic import ValidationError
+
+from hook_models import BashToolInput, EditToolInput, WriteToolInput
+from post_bash_validator import validate_bash_command
+from post_edit_validator import validate_edit_content
 from post_prompt_validator import validate_user_prompt
 from pre_bash_validator import validate_before_execution
 from stop_validator import validate_stop
@@ -47,22 +50,36 @@ def main():
         exit_zero_messages = validate_user_prompt(prompt)
 
     elif hook_event_name == "PreToolUse" and tool_name == "Bash":
-        command = tool_input.get("command", "")
-        exit_two_messages = validate_before_execution(command)
+        try:
+            bash_input = BashToolInput(**tool_input)
+            exit_two_messages = validate_before_execution(bash_input.command)
+        except ValidationError as e:
+            exit_one_messages.append(f"Invalid Bash tool input: {e}")
 
     elif hook_event_name == "PostToolUse" and tool_name == "Edit":
-        content = tool_input.get("new_string", "")
-        filepath = tool_input.get("file_path", "")
-        exit_two_messages = validate_content(content, filepath)
+        try:
+            edit_input = EditToolInput(**tool_input)
+            exit_two_messages = validate_edit_content(
+                edit_input.old_string, edit_input.new_string, edit_input.file_path
+            )
+        except ValidationError as e:
+            exit_one_messages.append(f"Invalid Edit tool input: {e}")
 
     elif hook_event_name == "PostToolUse" and tool_name == "Write":
-        content = tool_input.get("content", "")
-        filepath = tool_input.get("file_path", "")
-        exit_two_messages = validate_content(content, filepath)
+        try:
+            write_input = WriteToolInput(**tool_input)
+            exit_two_messages = validate_edit_content(
+                "", write_input.content, write_input.file_path
+            )
+        except ValidationError as e:
+            exit_one_messages.append(f"Invalid Write tool input: {e}")
 
     elif hook_event_name == "PostToolUse" and tool_name == "Bash":
-        command = tool_input.get("command", "")
-        exit_two_messages = validate_after_execution(command)
+        try:
+            bash_input = BashToolInput(**tool_input)
+            exit_two_messages = validate_bash_command(bash_input.command)
+        except ValidationError as e:
+            exit_one_messages.append(f"Invalid Bash tool input: {e}")
 
     elif hook_event_name == "Stop":
         transcript_path = input_data.get("transcript_path", "")
@@ -70,16 +87,17 @@ def main():
 
     # Print messages
     for exit_zero_message in exit_zero_messages:
+        # https://docs.claude.com/en/docs/claude-code/hooks#simple%3A-exit-code
         print(exit_zero_message, file=sys.stdout)
 
     for exit_one_message in exit_one_messages:
         print(exit_one_message, file=sys.stderr)
 
     for exit_two_message in exit_two_messages:
+        # https://docs.claude.com/en/docs/claude-code/hooks#exit-code-2-behavior
         print(exit_two_message, file=sys.stderr)
 
     # Handle validation results
-    # https://docs.claude.com/en/docs/claude-code/hooks#exit-code-2-behavior
     if exit_two_messages:
         # exit two should have a high priority than exit 1
         sys.exit(2)
