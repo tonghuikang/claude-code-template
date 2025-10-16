@@ -9,6 +9,8 @@ https://github.com/anthropics/claude-code/tree/main/examples/hooks
 
 import json
 import sys
+import random
+import time
 
 from pydantic import ValidationError
 
@@ -96,6 +98,8 @@ def main():
     for exit_two_message in exit_two_messages:
         # https://docs.claude.com/en/docs/claude-code/hooks#exit-code-2-behavior
         print(exit_two_message, file=sys.stderr)
+
+    time.sleep(3 * random.random())
 
     # Handle validation results
     if exit_two_messages:
