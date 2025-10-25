@@ -87,7 +87,9 @@ Runs when Claude finishes responding.
 You can start Claude Code in this repository and provide the following query
 
 ```
-move the "Bash(grep)" check from pre bash to post bash
+Write a file in Python root containing `except Exception`
 ```
 
-This demonstrates the Stop hook validating that tests were run after code changes.
+This demonstrates
+- Edit hook giving comments on `except Exception`
+- Stop hook validating that check were done after code changes
