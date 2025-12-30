@@ -3,6 +3,7 @@
     "includeCoAuthoredBy": false,
     "permissions": {
         "allow": [
+            "Read(//tmp/claude/tasks/**)",
             "mcp__puppeteer__puppeteer_navigate",
             "mcp__puppeteer__puppeteer_screenshot",
             "mcp__puppeteer__puppeteer_click",
