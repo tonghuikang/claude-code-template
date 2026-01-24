@@ -16,10 +16,10 @@ You will
 1) Enumerate over every requirement from the user
     - State the requirement
     - Cite the user instruction
-    - Add to the todo `TodoWrite` tool
+    - Add to the `TaskCreate` tool
 
 2) Check whether the user instruction is followed
-    - For each item in the todo list
+    - For each task
     - Reason whether you have addressed the requirement
 
 If you have made edits, you will ALSO
@@ -34,8 +34,8 @@ If you have made edits, you will ALSO
 
 BASH_AFTER_EDIT_REMINDER = "It seems that you did not run bash after your last edit."
 
-TODO_AFTER_EDIT_REMINDER = (
-    "It seems that you did not use the TodoWrite tool after your last edit."
+TASK_CREATE_AFTER_EDIT_REMINDER = (
+    "It seems that you did not use the TaskCreate tool after your last edit."
 )
 
 
@@ -47,7 +47,7 @@ def validate_stop(transcript_path: str) -> list[str]:
         lines = f.readlines()
         has_edits = False
         ran_bash_after_edit = False
-        use_todo_after_edit = False
+        used_task_create_after_edit = False
         for line in lines[::-1]:  # from the last message
             transcript = json.loads(line)
             if transcript["type"] == "assistant":
@@ -57,17 +57,17 @@ def validate_stop(transcript_path: str) -> list[str]:
                             has_edits = True
                         if content["name"] == "Bash":
                             ran_bash_after_edit = True
-                        if content["name"] == "TodoWrite":
-                            use_todo_after_edit = True
+                        if content["name"] == "TaskCreate":
+                            used_task_create_after_edit = True
             if has_edits:
                 break
 
         if has_edits:
-            if (not ran_bash_after_edit) or (not use_todo_after_edit):
+            if (not ran_bash_after_edit) or (not used_task_create_after_edit):
                 issues.append(CHECKING_INSTRUCTIONS)
             if not ran_bash_after_edit:
                 issues.append(BASH_AFTER_EDIT_REMINDER)
-            if not use_todo_after_edit:
-                issues.append(TODO_AFTER_EDIT_REMINDER)
+            if not used_task_create_after_edit:
+                issues.append(TASK_CREATE_AFTER_EDIT_REMINDER)
 
     return issues
