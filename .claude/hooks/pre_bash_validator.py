@@ -5,7 +5,7 @@ Validates bash commands before execution.
 """
 
 
-def validate_before_execution(command: str) -> list[str]:
+def validate_pre_bash_command(command: str) -> list[str]:
     """Validate bash command before execution."""
     issues = []
 

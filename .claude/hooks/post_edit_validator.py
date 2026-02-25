@@ -10,7 +10,6 @@ def validate_edit_content(old_string: str, new_string: str, filepath: str) -> li
     issues = []
 
     if ".py" in filepath:
-
         if "except Exception" in new_string:
             issues.append("Please consider catching a more specific exception.")
 

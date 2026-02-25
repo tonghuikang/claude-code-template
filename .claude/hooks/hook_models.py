@@ -25,21 +25,12 @@ class WriteToolInput(BaseModel):
     file_path: str
 
 
-class UserPromptSubmitHook(BaseModel):
-    # https://docs.claude.com/en/docs/claude-code/hooks#userpromptsubmit-input
-    hook_event_name: str
-    prompt: str
-
-    model_config = ConfigDict(extra="allow")
+class WebFetchToolInput(BaseModel):
+    url: str
+    prompt: str = ""
 
 
-class PostToolUseHook(BaseModel):
-    # https://docs.claude.com/en/docs/claude-code/hooks#posttooluse-input
-    hook_event_name: str
-    tool_name: str
-    tool_input: dict
-
-    model_config = ConfigDict(extra="allow")
+# Hook lifecycle: UserPromptSubmit -> PreToolUse -> Notification -> PostToolUse -> Stop
 
 
 class GenericHook(BaseModel):
@@ -47,3 +38,32 @@ class GenericHook(BaseModel):
     hook_event_name: str
 
     model_config = ConfigDict(extra="allow")
+
+
+class UserPromptSubmitHook(GenericHook):
+    # https://docs.claude.com/en/docs/claude-code/hooks#userpromptsubmit-input
+    prompt: str
+
+
+class PreToolUseHook(GenericHook):
+    # https://docs.claude.com/en/docs/claude-code/hooks#pretooluse-input
+    tool_name: str
+    tool_input: dict
+
+
+class NotificationHook(GenericHook):
+    # https://docs.claude.com/en/docs/claude-code/hooks#notification-input
+    message: str = ""
+
+
+class PostToolUseHook(GenericHook):
+    # https://docs.claude.com/en/docs/claude-code/hooks#posttooluse-input
+    tool_name: str
+    tool_input: dict
+
+
+class StopHook(GenericHook):
+    # https://docs.claude.com/en/docs/claude-code/hooks#stop-input
+    last_assistant_message: str = ""
+    transcript_path: str = ""
+    stop_hook_active: bool = False

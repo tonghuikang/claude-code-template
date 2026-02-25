@@ -3,123 +3,153 @@ Claude Code Hook: Centralized Hook Processing.
 
 Routes hook events to appropriate validators.
 
-From:
+Adapted from:
 https://github.com/anthropics/claude-code/tree/main/examples/hooks
+
 """
 
 import json
+import os
+import subprocess
 import sys
-import random
-import time
 
-from pydantic import ValidationError
-
-from hook_models import BashToolInput, EditToolInput, WriteToolInput
-from post_bash_validator import validate_bash_command
+from hook_models import (
+    BashToolInput,
+    EditToolInput,
+    GenericHook,
+    NotificationHook,
+    PostToolUseHook,
+    PreToolUseHook,
+    StopHook,
+    UserPromptSubmitHook,
+    WebFetchToolInput,
+    WriteToolInput,
+)
+from post_bash_validator import validate_post_bash_command
 from post_edit_validator import validate_edit_content
 from post_prompt_validator import validate_user_prompt
-from pre_bash_validator import validate_before_execution
+from pre_bash_validator import validate_pre_bash_command
+from pre_webfetch_validator import validate_webfetch_url
+from pydantic import ValidationError
 from stop_validator import validate_stop
 
 
-def load_hook_input() -> dict:
-    """Load and parse JSON input from stdin."""
+def load_hook_input() -> GenericHook:
+    """Load and parse JSON input from stdin using pydantic."""
     try:
-        return json.load(sys.stdin)
+        raw_data = json.load(sys.stdin)
+        generic_hook = GenericHook(**raw_data)
+
+        # Route to specific hook model based on hook_event_name
+        if generic_hook.hook_event_name == "UserPromptSubmit":
+            return UserPromptSubmitHook(**raw_data)
+        elif generic_hook.hook_event_name == "PreToolUse":
+            return PreToolUseHook(**raw_data)
+        elif generic_hook.hook_event_name == "Notification":
+            return NotificationHook(**raw_data)
+        elif generic_hook.hook_event_name == "PostToolUse":
+            return PostToolUseHook(**raw_data)
+        elif generic_hook.hook_event_name == "Stop":
+            return StopHook(**raw_data)
+        else:
+            return generic_hook
+
     except json.JSONDecodeError as e:
         print(f"Error: Invalid JSON input: {e}", file=sys.stderr)
-        # Exit code 1 shows stderr to the user but not to Claude
+        sys.exit(1)
+    except ValidationError as e:
+        print(f"Error: Invalid hook input structure: {e}", file=sys.stderr)
         sys.exit(1)
 
 
 def main():
     """Route hook events to appropriate validators."""
     # https://docs.claude.com/en/docs/claude-code/hooks#hook-input
-    input_data = load_hook_input()
-
-    hook_event_name = input_data.get("hook_event_name", "")
-    tool_name = input_data.get("tool_name", "")
-    tool_input = input_data.get("tool_input", {})
+    hook_input = load_hook_input()
 
     exit_zero_messages = []
     exit_one_messages = []
     exit_two_messages = []
 
     # Route to appropriate validator based on hook_event_name + tool_name
-    # Hook lifecycle: UserPromptSubmit -> PreToolUse -> PostToolUse -> Stop
-    if hook_event_name == "UserPromptSubmit":
-        prompt = input_data.get("prompt", "")
-        exit_zero_messages = validate_user_prompt(prompt)
+    # Hook lifecycle: UserPromptSubmit -> PreToolUse -> Notification -> PostToolUse -> Stop
+    if isinstance(hook_input, UserPromptSubmitHook):
+        print(hook_input.model_dump())  # Original prompt_validator behavior
+        if hook_input.prompt:
+            exit_zero_messages = validate_user_prompt(hook_input.prompt)
 
-    elif hook_event_name == "PreToolUse" and tool_name == "Bash":
-        try:
-            bash_input = BashToolInput(**tool_input)
-            exit_two_messages = validate_before_execution(bash_input.command)
-        except ValidationError as e:
-            exit_one_messages.append(f"Invalid Bash tool input: {e}")
+    elif isinstance(hook_input, PreToolUseHook):
+        if hook_input.tool_name == "Bash":
+            bash_input = BashToolInput(**hook_input.tool_input)
+            exit_two_messages = validate_pre_bash_command(bash_input.command)
 
-    elif hook_event_name == "PostToolUse" and tool_name == "Edit":
-        try:
-            edit_input = EditToolInput(**tool_input)
-            exit_two_messages = validate_edit_content(
-                edit_input.old_string, edit_input.new_string, edit_input.file_path
-            )
-        except ValidationError as e:
-            exit_one_messages.append(f"Invalid Edit tool input: {e}")
+        elif hook_input.tool_name == "WebFetch":
+            webfetch_input = WebFetchToolInput(**hook_input.tool_input)
+            if webfetch_input.url:
+                exit_two_messages = validate_webfetch_url(webfetch_input.url)
 
-    elif hook_event_name == "PostToolUse" and tool_name == "Write":
-        try:
-            write_input = WriteToolInput(**tool_input)
-            exit_two_messages = validate_edit_content(
-                "", write_input.content, write_input.file_path
-            )
-        except ValidationError as e:
-            exit_one_messages.append(f"Invalid Write tool input: {e}")
+    elif isinstance(hook_input, NotificationHook):
+        if os.environ.get("CLAUDE_CODE_NOTIFY") == "simple":
+            message = hook_input.message
+            if message:
+                subprocess.Popen(
+                    ["say", message],
+                    start_new_session=True,
+                )
 
-    elif hook_event_name == "PostToolUse" and tool_name == "Bash":
-        try:
-            bash_input = BashToolInput(**tool_input)
-            exit_two_messages = validate_bash_command(bash_input.command)
-        except ValidationError as e:
-            exit_one_messages.append(f"Invalid Bash tool input: {e}")
+    elif isinstance(hook_input, PostToolUseHook):
+        if hook_input.tool_name == "Bash":
+            bash_input = BashToolInput(**hook_input.tool_input)
+            if bash_input.command:
+                exit_two_messages = validate_post_bash_command(bash_input.command)
 
-    elif (
-        hook_event_name == "PostToolUse"
-        and tool_name == "mcp__puppeteer__puppeteer_navigate"
-    ):
-        exit_one_messages.append(
-            "Please make sure that you\n"
-            "- use at least a resolution of 1920 x 1000\n"
-            "- scrolled to the relevant part to check correctness\n"
-        )
+        elif hook_input.tool_name == "Edit":
+            edit_input = EditToolInput(**hook_input.tool_input)
+            if edit_input.new_string or edit_input.file_path:
+                exit_two_messages = validate_edit_content(
+                    edit_input.old_string, edit_input.new_string, edit_input.file_path
+                )
 
-    elif hook_event_name == "Stop":
-        if input_data.get("stop_hook_active"):
+        elif hook_input.tool_name == "Write":
+            write_input = WriteToolInput(**hook_input.tool_input)
+            if write_input.content or write_input.file_path:
+                exit_two_messages = validate_edit_content(
+                    "", write_input.content, write_input.file_path
+                )
+
+    elif isinstance(hook_input, StopHook):
+        if hook_input.stop_hook_active:
             sys.exit(0)
-        transcript_path = input_data.get("transcript_path", "")
-        exit_two_messages = validate_stop(transcript_path)
+        if hook_input.transcript_path:
+            exit_two_messages = validate_stop(hook_input.transcript_path)
+        if os.environ.get("CLAUDE_CODE_NOTIFY") == "simple":
+            message = hook_input.last_assistant_message
+            if message:
+                subprocess.Popen(
+                    ["say", message],
+                    start_new_session=True,
+                )
 
-    # Print messages
+    # Handle exit codes and output
     for exit_zero_message in exit_zero_messages:
         # https://docs.claude.com/en/docs/claude-code/hooks#simple%3A-exit-code
         print(exit_zero_message, file=sys.stdout)
 
     for exit_one_message in exit_one_messages:
+        # Exit code 1 shows stderr to the user but not to Claude
         print(exit_one_message, file=sys.stderr)
 
     for exit_two_message in exit_two_messages:
+        # Exit code 2 shows stderr to Claude (tool already ran)
         # https://docs.claude.com/en/docs/claude-code/hooks#exit-code-2-behavior
         print(exit_two_message, file=sys.stderr)
 
-    time.sleep(3 * random.random())
-
-    # Handle validation results
     if exit_two_messages:
-        # exit two should have a high priority than exit 1
         sys.exit(2)
     if exit_one_messages:
         sys.exit(1)
 
+    # No issues found
     sys.exit(0)
 
 

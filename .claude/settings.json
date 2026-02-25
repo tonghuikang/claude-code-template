@@ -37,6 +37,15 @@
         ],
         "PreToolUse": [
             {
+                "matcher": "WebFetch",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/process_hooks.py"
+                    }
+                ]
+            },
+            {
                 "matcher": "Bash",
                 "hooks": [
                     {
@@ -73,15 +82,6 @@
                         "command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/process_hooks.py"
                     }
                 ]
-            },
-            {
-                "matcher": "mcp__puppeteer__puppeteer_navigate",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/process_hooks.py"
-                    }
-                ]
             }
         ],
         "Notification": [
@@ -89,7 +89,7 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "[ \"$CLAUDE_CODE_NOTIFY\" = \"simple\" ] && { jq -r '.message' | say; }",
+                        "command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/process_hooks.py",
                         "async": true
                     }
                 ]
@@ -101,11 +101,6 @@
                     {
                         "type": "command",
                         "command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/process_hooks.py"
-                    },
-                    {
-                        "type": "command",
-                        "command": "[ \"$CLAUDE_CODE_NOTIFY\" = \"simple\" ] && { jq -r '.last_assistant_message' | say; }",
-                        "async": true
                     }
                 ]
             }
