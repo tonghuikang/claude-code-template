@@ -153,6 +153,25 @@ def test_main_stop():
             assert exc.value.code == 2
 
 
+def test_main_stop_hook_active_exits_early():
+    """Test that stop_hook_active=True exits 0 without running validate_stop."""
+    with mock.patch(
+        "process_hooks.load_hook_input",
+        return_value={
+            "hook_event_name": "Stop",
+            "tool_name": "",
+            "tool_input": {},
+            "transcript_path": "/tmp/transcript.jsonl",
+            "stop_hook_active": True,
+        },
+    ):
+        with mock.patch("process_hooks.validate_stop") as mock_validator:
+            with pytest.raises(SystemExit) as exc:
+                main()
+            mock_validator.assert_not_called()
+            assert exc.value.code == 0
+
+
 # Edge case tests
 def test_main_no_issues():
     """Test that no issues results in clean exit."""

@@ -1,5 +1,5 @@
 {
-    "env": {"BASH_MAX_OUTPUT_LENGTH": "100000", "BASH_DEFAULT_TIMEOUT_MS": "2000000"},
+    "env": {"BASH_MAX_OUTPUT_LENGTH": "100000", "BASH_DEFAULT_TIMEOUT_MS": "2000000", "CLAUDE_CODE_NOTIFY": "simple"},
     "includeCoAuthoredBy": false,
     "permissions": {
         "allow": [
@@ -88,8 +88,9 @@
             {
                 "hooks": [
                     {
-                        "type": "command", 
-                        "command": "[ \"$CLAUDE_CODE_NOTIFY\" = \"simple\" ] && say requesting permissions &"
+                        "type": "command",
+                        "command": "[ \"$CLAUDE_CODE_NOTIFY\" = \"simple\" ] && { jq -r '.message' | say; }",
+                        "async": true
                     }
                 ]
             }
@@ -99,11 +100,12 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "[ \"$CLAUDE_CODE_NOTIFY\" = \"simple\" ] && say operation complete &"
+                        "command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/process_hooks.py"
                     },
                     {
                         "type": "command",
-                        "command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/process_hooks.py"
+                        "command": "[ \"$CLAUDE_CODE_NOTIFY\" = \"simple\" ] && { jq -r '.last_assistant_message' | say; }",
+                        "async": true
                     }
                 ]
             }

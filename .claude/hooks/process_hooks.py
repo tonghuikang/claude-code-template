@@ -83,7 +83,10 @@ def main():
         except ValidationError as e:
             exit_one_messages.append(f"Invalid Bash tool input: {e}")
 
-    elif hook_event_name == "PostToolUse" and tool_name == "mcp__puppeteer__puppeteer_navigate":
+    elif (
+        hook_event_name == "PostToolUse"
+        and tool_name == "mcp__puppeteer__puppeteer_navigate"
+    ):
         exit_one_messages.append(
             "Please make sure that you\n"
             "- use at least a resolution of 1920 x 1000\n"
@@ -91,6 +94,8 @@ def main():
         )
 
     elif hook_event_name == "Stop":
+        if input_data.get("stop_hook_active"):
+            sys.exit(0)
         transcript_path = input_data.get("transcript_path", "")
         exit_two_messages = validate_stop(transcript_path)
 
