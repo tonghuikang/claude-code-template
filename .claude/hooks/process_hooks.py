@@ -95,6 +95,9 @@ def main():
                 subprocess.Popen(
                     ["say", message],
                     start_new_session=True,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    stdin=subprocess.DEVNULL,
                 )
 
     elif isinstance(hook_input, PostToolUseHook):
@@ -128,6 +131,9 @@ def main():
                 subprocess.Popen(
                     ["say", message],
                     start_new_session=True,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    stdin=subprocess.DEVNULL,
                 )
 
     # Handle exit codes and output
