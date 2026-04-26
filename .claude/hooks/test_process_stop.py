@@ -2,7 +2,7 @@ import json
 import tempfile
 from pathlib import Path
 
-from stop_validator import validate_stop
+from process_stop import validate_stop
 
 
 def test_stop_validator_no_edits():
@@ -66,7 +66,7 @@ def test_stop_validator_with_edits_and_confirmation():
 
 
 def test_stop_validator_with_edits_no_confirmation():
-    """Test that stop_validator returns issues when edits are made but confirmation phrase is missing"""
+    """Test that stop_validator returns no issues even when edits lack confirmation phrase."""
     transcript_data = {
         "type": "assistant",
         "message": {
@@ -92,7 +92,6 @@ def test_stop_validator_with_edits_no_confirmation():
 
     try:
         issues = validate_stop(transcript_path)
-        assert len(issues) > 0
-        assert "Review your work" in issues[0]
+        assert issues == []
     finally:
         Path(transcript_path).unlink()

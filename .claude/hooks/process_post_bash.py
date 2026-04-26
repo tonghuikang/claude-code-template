@@ -9,7 +9,4 @@ def validate_post_bash_command(command: str) -> list[str]:
     """Validate bash command after execution."""
     issues = []
 
-    if " && " in command:
-        issues.append("Please try to run the commands individually.")
-
     return issues

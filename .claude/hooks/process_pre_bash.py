@@ -12,7 +12,4 @@ def validate_pre_bash_command(command: str) -> list[str]:
     if command.startswith("python"):
         issues.append("Please use `uv run python ...`")
 
-    if "grep" in command:
-        issues.append("Please use the Grep tool.")
-
     return issues

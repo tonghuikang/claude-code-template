@@ -6,7 +6,6 @@ from unittest import mock
 import pytest
 from hook_models import (
     GenericHook,
-    NotificationHook,
     PostToolUseHook,
     PreToolUseHook,
     StopHook,
@@ -172,21 +171,17 @@ def test_main_stop_hook_active_exits_early():
 
 
 def test_main_stop_notification():
-    """Test that Stop hook with CLAUDE_CODE_NOTIFY sends notification."""
+    """Test that Stop hook with CLAUDE_CODE_NOTIFY routes to process_notification."""
     hook = StopHook(
         hook_event_name="Stop",
         last_assistant_message="Done with the task",
     )
     with mock.patch("process_hooks.load_hook_input", return_value=hook):
-        with mock.patch.dict("os.environ", {"CLAUDE_CODE_NOTIFY": "simple"}):
-            with mock.patch("process_hooks.subprocess.Popen") as mock_popen:
-                with pytest.raises(SystemExit) as exc:
-                    main()
-                mock_popen.assert_called_once_with(
-                    ["say", "Done with the task"],
-                    start_new_session=True,
-                )
-                assert exc.value.code == 0
+        with mock.patch("process_hooks.process_notification") as mock_notify:
+            with pytest.raises(SystemExit) as exc:
+                main()
+            mock_notify.assert_called_once_with("Done with the task")
+            assert exc.value.code == 0
 
 
 # Edge case tests

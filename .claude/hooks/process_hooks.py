@@ -9,8 +9,6 @@ https://github.com/anthropics/claude-code/tree/main/examples/hooks
 """
 
 import json
-import os
-import subprocess
 import sys
 
 from hook_models import (
@@ -25,13 +23,14 @@ from hook_models import (
     WebFetchToolInput,
     WriteToolInput,
 )
-from post_bash_validator import validate_post_bash_command
-from post_edit_validator import validate_edit_content
-from post_prompt_validator import validate_user_prompt
-from pre_bash_validator import validate_pre_bash_command
-from pre_webfetch_validator import validate_webfetch_url
+from process_notification import process_notification
+from process_post_bash import validate_post_bash_command
+from process_post_edit import validate_edit_content
+from process_post_prompt import validate_user_prompt
+from process_pre_bash import validate_pre_bash_command
+from process_pre_webfetch import validate_webfetch_url
+from process_stop import validate_stop
 from pydantic import ValidationError
-from stop_validator import validate_stop
 
 
 def load_hook_input() -> GenericHook:
@@ -89,16 +88,7 @@ def main():
                 exit_two_messages = validate_webfetch_url(webfetch_input.url)
 
     elif isinstance(hook_input, NotificationHook):
-        if os.environ.get("CLAUDE_CODE_NOTIFY") == "simple":
-            message = hook_input.message
-            if message:
-                subprocess.Popen(
-                    ["say", message],
-                    start_new_session=True,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                    stdin=subprocess.DEVNULL,
-                )
+        process_notification(hook_input.message)
 
     elif isinstance(hook_input, PostToolUseHook):
         if hook_input.tool_name == "Bash":
@@ -125,16 +115,7 @@ def main():
             sys.exit(0)
         if hook_input.transcript_path:
             exit_two_messages = validate_stop(hook_input.transcript_path)
-        if os.environ.get("CLAUDE_CODE_NOTIFY") == "simple":
-            message = hook_input.last_assistant_message
-            if message:
-                subprocess.Popen(
-                    ["say", message],
-                    start_new_session=True,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                    stdin=subprocess.DEVNULL,
-                )
+        process_notification(hook_input.last_assistant_message)
 
     # Handle exit codes and output
     for exit_zero_message in exit_zero_messages:

@@ -1,6 +1,6 @@
-"""Tests for post_edit_validator.py."""
+"""Tests for process_post_edit.py."""
 
-from post_edit_validator import validate_edit_content
+from process_post_edit import validate_edit_content
 
 
 def test_validate_edit_content_exception():
