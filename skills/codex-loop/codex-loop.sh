@@ -74,12 +74,11 @@ ${prior_verdict}"
         fi
 
         echo "=== codex-loop iter $i: worker on $plan_abs ===" >&2
-        codex exec --dangerously-bypass-approvals-and-sandbox "${model_args[@]}" "${sudo_args[@]}" \
-            "$worker_prompt"
+        codex exec --dangerously-bypass-approvals-and-sandbox ${model_args[@]+"${model_args[@]}"} ${sudo_args[@]+"${sudo_args[@]}"} "$worker_prompt"
 
         echo "=== codex-loop iter $i: checker ===" >&2
         : > "$verdict_file"
-        codex exec --dangerously-bypass-approvals-and-sandbox "${model_args[@]}" \
+        codex exec --dangerously-bypass-approvals-and-sandbox ${model_args[@]+"${model_args[@]}"} \
             --output-last-message "$verdict_file" \
             "Read the plan at $plan_abs and inspect the current repository state. Do NOT modify any files. Decide whether every single requirement in the plan is fully satisfied right now. If yes, respond with EXACTLY this one line and nothing else: ${sentinel}. If not, list each unsatisfied requirement on its own line, prefixed with 'TODO: '."
 
