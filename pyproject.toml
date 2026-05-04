@@ -12,6 +12,8 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "jupytext>=1.19.1",
+    "kaggle>=2.1.0",
     "pytest>=8.4.2",
     "ruff>=0.13.2",
 ]
