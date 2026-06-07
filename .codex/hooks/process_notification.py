@@ -15,6 +15,13 @@ from sys import platform
 NOTIFY_KOKORO = Path(__file__).with_name("notify_kokoro.py")
 
 
+def _notification_python() -> str:
+    project_python = Path(__file__).resolve().parents[2] / ".venv" / "bin" / "python3"
+    if project_python.exists():
+        return str(project_python)
+    return sys.executable
+
+
 def process_notification(message: str) -> None:
     """Speak message using the platform-specific notification path."""
     if not message:
@@ -23,7 +30,7 @@ def process_notification(message: str) -> None:
     if platform == "darwin":
         cmd = ["say", message]
     elif platform.startswith("linux"):
-        cmd = [sys.executable, str(NOTIFY_KOKORO), message]
+        cmd = [_notification_python(), str(NOTIFY_KOKORO), message]
     else:
         return
 
