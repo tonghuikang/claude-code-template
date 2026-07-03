@@ -1,6 +1,6 @@
 ---
 name: Kaggle kernels
-description: This skill should be used when pushing, running, or debugging Kaggle notebook/script kernels via the kaggle CLI — especially GPU kernels that depend on utility notebooks (kernel_sources), attach competitions/models, or run vLLM/gpt-oss. Covers the kaggle CLI, kernel-metadata.json, the competition→GPU coupling, utility-output mount paths, and common failure modes.
+description: This skill should be used when pushing, running, or debugging Kaggle notebook/script kernels via the kaggle CLI.
 version: 0.1.0
 ---
 
