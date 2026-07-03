@@ -117,8 +117,9 @@ def main():
     elif isinstance(hook_input, StopHook):
         if hook_input.stop_hook_active:
             sys.exit(0)
-        if hook_input.transcript_path:
-            exit_two_messages = check_stop(hook_input.transcript_path)
+        exit_two_messages = check_stop(
+            hook_input.transcript_path, hook_input.last_assistant_message
+        )
         speak(hook_input.last_assistant_message)
 
     # Handle exit codes and output

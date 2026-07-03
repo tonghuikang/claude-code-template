@@ -67,6 +67,64 @@ class NotificationHook:
 
 
 @dataclass(frozen=True)
+class UserPromptSubmitHook:
+    """Model for UserPromptSubmit event payloads."""
+
+    hook_event_name: str
+    payload: dict[str, Any]
+    prompt: str
+
+    @staticmethod
+    def from_payload(payload: dict[str, Any]) -> "UserPromptSubmitHook":
+        payload = _coerce_payload(payload)
+        return UserPromptSubmitHook(
+            hook_event_name=_coerce_text(payload.get("hook_event_name")),
+            payload=payload,
+            prompt=_coerce_text(payload.get("prompt")),
+        )
+
+
+@dataclass(frozen=True)
+class PreToolUseHook:
+    """Model for PreToolUse event payloads."""
+
+    hook_event_name: str
+    payload: dict[str, Any]
+    tool_name: str
+    tool_input: dict[str, Any]
+
+    @staticmethod
+    def from_payload(payload: dict[str, Any]) -> "PreToolUseHook":
+        payload = _coerce_payload(payload)
+        return PreToolUseHook(
+            hook_event_name=_coerce_text(payload.get("hook_event_name")),
+            payload=payload,
+            tool_name=_coerce_text(payload.get("tool_name")),
+            tool_input=_coerce_payload(payload.get("tool_input")),
+        )
+
+
+@dataclass(frozen=True)
+class PostToolUseHook:
+    """Model for PostToolUse event payloads."""
+
+    hook_event_name: str
+    payload: dict[str, Any]
+    tool_name: str
+    tool_input: dict[str, Any]
+
+    @staticmethod
+    def from_payload(payload: dict[str, Any]) -> "PostToolUseHook":
+        payload = _coerce_payload(payload)
+        return PostToolUseHook(
+            hook_event_name=_coerce_text(payload.get("hook_event_name")),
+            payload=payload,
+            tool_name=_coerce_text(payload.get("tool_name")),
+            tool_input=_coerce_payload(payload.get("tool_input")),
+        )
+
+
+@dataclass(frozen=True)
 class StopHook:
     """Model for Stop event payloads."""
 
@@ -92,7 +150,16 @@ class StopHook:
         )
 
 
-def parse_hook_payload(payload: Any) -> GenericHook | NotificationHook | StopHook:
+def parse_hook_payload(
+    payload: Any,
+) -> (
+    GenericHook
+    | NotificationHook
+    | StopHook
+    | UserPromptSubmitHook
+    | PreToolUseHook
+    | PostToolUseHook
+):
     """Parse raw payload into a typed model."""
     if not isinstance(payload, dict):
         return GenericHook.from_payload({})
@@ -103,5 +170,11 @@ def parse_hook_payload(payload: Any) -> GenericHook | NotificationHook | StopHoo
         return StopHook.from_payload(payload)
     if event_name == "Notification":
         return NotificationHook.from_payload(payload)
+    if event_name == "UserPromptSubmit":
+        return UserPromptSubmitHook.from_payload(payload)
+    if event_name == "PreToolUse":
+        return PreToolUseHook.from_payload(payload)
+    if event_name == "PostToolUse":
+        return PostToolUseHook.from_payload(payload)
 
     return GenericHook.from_payload(payload)

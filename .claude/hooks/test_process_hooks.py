@@ -160,7 +160,7 @@ def test_main_stop_validate():
         ) as mock_validator:
             with pytest.raises(SystemExit) as exc:
                 main()
-            mock_validator.assert_called_once_with("/tmp/transcript.jsonl")
+            mock_validator.assert_called_once_with("/tmp/transcript.jsonl", "")
             assert exc.value.code == 2
 
 

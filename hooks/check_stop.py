@@ -1,8 +1,11 @@
 """
 Shared Hook Logic: Stop Checks.
 
-Returns advisory issues for the final transcript before the agent stops.
+Returns advisory issues for the agent's final reply before it stops.
 Dependency-free so it can run under the system python used by Codex.
+
+Currently checks for a test phrase so the Stop hook wiring can be exercised
+end-to-end: ask the agent to reply with the phrase and the stop is blocked.
 """
 
 from __future__ import annotations
@@ -47,21 +50,21 @@ def _extract_assistant_message(record: dict[str, Any]) -> str:
     return ""
 
 
-def check_stop(transcript_path: str) -> list[str]:
-    """Check the final stop transcript contents."""
-    if not transcript_path:
-        return []
+TEST_PHRASE = "correct horse battery staple"
 
+
+def _last_assistant_message_from_transcript(transcript_path: str) -> str:
+    """Return the last assistant message from a JSONL transcript, or ""."""
     path = Path(transcript_path)
     if not path.is_file():
-        return ["Missing transcript file for stop validation."]
+        return ""
 
     try:
         raw_lines = path.read_text(encoding="utf-8").splitlines()
     except OSError:
-        return ["Unable to read stop transcript file for validation."]
+        return ""
 
-    assistant_messages: list[str] = []
+    last_message = ""
     for raw_line in raw_lines:
         raw_line = raw_line.strip()
         if not raw_line:
@@ -72,6 +75,21 @@ def check_stop(transcript_path: str) -> list[str]:
             continue
         message = _extract_assistant_message(record)
         if message:
-            assistant_messages.append(message)
+            last_message = message
+    return last_message
+
+
+def check_stop(transcript_path: str, last_assistant_message: str = "") -> list[str]:
+    """Check the agent's final reply before it stops."""
+    message = last_assistant_message.strip()
+    if not message and transcript_path:
+        message = _last_assistant_message_from_transcript(transcript_path)
+
+    if TEST_PHRASE in message.lower():
+        return [
+            f"This is a test of the Stop hook: the final reply contained the "
+            f"test phrase '{TEST_PHRASE}', so termination was blocked. "
+            f"Acknowledge the test and finish without repeating the phrase."
+        ]
 
     return []
