@@ -1,12 +1,12 @@
 """
-Claude Code Hook: Pre-Bash Command Validator.
+Shared Hook Logic: Bash Command Checks (PreToolUse).
 
-Validates bash commands before execution.
+Returns advisory issues for a bash command before it runs.
 """
 
 
-def validate_pre_bash_command(command: str) -> list[str]:
-    """Validate bash command before execution."""
+def check_bash_pre(command: str) -> list[str]:
+    """Check a bash command before it runs."""
     issues = []
 
     if command.startswith("python"):

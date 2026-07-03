@@ -1,12 +1,12 @@
 """
-Claude Code Hook: Edit Content Validator.
+Shared Hook Logic: Edit/Write Content Checks.
 
-Validates content from Edit or Write operations.
+Returns advisory issues for content from Edit or Write operations.
 """
 
 
-def validate_edit_content(old_string: str, new_string: str, filepath: str) -> list[str]:
-    """Validate content from Edit or Write operations."""
+def check_edit(old_string: str, new_string: str, filepath: str) -> list[str]:
+    """Check content from an Edit or Write operation."""
     issues = []
 
     if ".py" in filepath:

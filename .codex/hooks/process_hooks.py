@@ -19,8 +19,8 @@ from hook_models import (
     StopHook,
     parse_hook_payload,
 )
-from process_notification import process_notification
-from process_stop import validate_stop
+from check_stop import check_stop
+from notification import speak
 
 
 def _debug_log(message: str) -> None:
@@ -60,13 +60,13 @@ def _message_text(raw_message: Any) -> str:
 
 def _handle_stop_hook(hook: StopHook) -> None:
     message = _message_text(hook.last_assistant_message) or "Task complete."
-    process_notification(message)
+    speak(message)
 
     if hook.stop_hook_active:
         _emit(_hook_ok_response())
         return
 
-    issues = validate_stop(hook.transcript_path)
+    issues = check_stop(hook.transcript_path)
     if issues:
         _emit(_hook_block_response(" ".join(issues)))
         return
@@ -76,7 +76,7 @@ def _handle_stop_hook(hook: StopHook) -> None:
 
 def _handle_notification_hook(hook: NotificationHook) -> None:
     if hook.message:
-        process_notification(hook.message)
+        speak(hook.message)
 
 
 def load_hook_input() -> GenericHook | NotificationHook | StopHook:

@@ -19,9 +19,9 @@ This template covers:
 The hook business logic lives in `hooks/` at the repository root and is shared
 by both agents. `.claude/hooks/` and `.codex/hooks/` contain only thin
 wrappers: each parses its agent's hook payload and dispatches to the shared
-validators in `hooks/`.
+checks in `hooks/`.
 
-- `hooks/` — validators, notification TTS, and their tests (dependency-free
+- `hooks/` — per-event checks, notification TTS, and their tests (dependency-free
   where Codex's system python needs them)
 - `.claude/hooks/` — Claude Code dispatcher (`process_hooks.py`) and dataclass
   payload models, wired up in `.claude/settings.json`

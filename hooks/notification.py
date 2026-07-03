@@ -22,7 +22,7 @@ def _notification_python() -> str:
     return sys.executable
 
 
-def process_notification(message: str) -> None:
+def speak(message: str) -> None:
     """Speak a notification message via a Kokoro TTS subprocess."""
     if not message:
         return

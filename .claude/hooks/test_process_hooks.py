@@ -62,7 +62,7 @@ def test_main_user_prompt_submit():
     )
     with mock.patch("process_hooks.load_hook_input", return_value=hook):
         with mock.patch(
-            "process_hooks.validate_user_prompt", return_value=["Refer to CLAUDE.md"]
+            "process_hooks.check_prompt", return_value=["Refer to CLAUDE.md"]
         ) as mock_validator:
             with pytest.raises(SystemExit) as exc:
                 main()
@@ -80,7 +80,7 @@ def test_main_pre_bash():
     )
     with mock.patch("process_hooks.load_hook_input", return_value=hook):
         with mock.patch(
-            "process_hooks.validate_pre_bash_command", return_value=["Use uv run"]
+            "process_hooks.check_bash_pre", return_value=["Use uv run"]
         ) as mock_validator:
             with pytest.raises(SystemExit) as exc:
                 main()
@@ -98,7 +98,7 @@ def test_main_post_bash():
     )
     with mock.patch("process_hooks.load_hook_input", return_value=hook):
         with mock.patch(
-            "process_hooks.validate_post_bash_command", return_value=["Use Grep tool"]
+            "process_hooks.check_bash_post", return_value=["Use Grep tool"]
         ) as mock_validator:
             with pytest.raises(SystemExit) as exc:
                 main()
@@ -119,7 +119,7 @@ def test_main_post_edit():
     )
     with mock.patch("process_hooks.load_hook_input", return_value=hook):
         with mock.patch(
-            "process_hooks.validate_edit_content",
+            "process_hooks.check_edit",
             return_value=["Catch specific exception"],
         ) as mock_validator:
             with pytest.raises(SystemExit) as exc:
@@ -139,7 +139,7 @@ def test_main_post_write():
     )
     with mock.patch("process_hooks.load_hook_input", return_value=hook):
         with mock.patch(
-            "process_hooks.validate_edit_content", return_value=["Avoid TYPE_CHECKING"]
+            "process_hooks.check_edit", return_value=["Avoid TYPE_CHECKING"]
         ) as mock_validator:
             with pytest.raises(SystemExit) as exc:
                 main()
@@ -156,7 +156,7 @@ def test_main_stop_validate():
     )
     with mock.patch("process_hooks.load_hook_input", return_value=hook):
         with mock.patch(
-            "process_hooks.validate_stop", return_value=["Review your work"]
+            "process_hooks.check_stop", return_value=["Review your work"]
         ) as mock_validator:
             with pytest.raises(SystemExit) as exc:
                 main()
@@ -165,14 +165,14 @@ def test_main_stop_validate():
 
 
 def test_main_stop_hook_active_exits_early():
-    """Test that stop_hook_active=True exits 0 without running validate_stop."""
+    """Test that stop_hook_active=True exits 0 without running check_stop."""
     hook = StopHook(
         hook_event_name="Stop",
         transcript_path="/tmp/transcript.jsonl",
         stop_hook_active=True,
     )
     with mock.patch("process_hooks.load_hook_input", return_value=hook):
-        with mock.patch("process_hooks.validate_stop") as mock_validator:
+        with mock.patch("process_hooks.check_stop") as mock_validator:
             with pytest.raises(SystemExit) as exc:
                 main()
             mock_validator.assert_not_called()
@@ -180,13 +180,13 @@ def test_main_stop_hook_active_exits_early():
 
 
 def test_main_stop_notification():
-    """Test that Stop hook with CLAUDE_CODE_NOTIFY routes to process_notification."""
+    """Test that Stop hook with CLAUDE_CODE_NOTIFY routes to speak."""
     hook = StopHook(
         hook_event_name="Stop",
         last_assistant_message="Done with the task",
     )
     with mock.patch("process_hooks.load_hook_input", return_value=hook):
-        with mock.patch("process_hooks.process_notification") as mock_notify:
+        with mock.patch("process_hooks.speak") as mock_notify:
             with pytest.raises(SystemExit) as exc:
                 main()
             mock_notify.assert_called_once_with("Done with the task")
@@ -202,7 +202,7 @@ def test_main_no_issues():
         tool_input={"command": "pwd"},
     )
     with mock.patch("process_hooks.load_hook_input", return_value=hook):
-        with mock.patch("process_hooks.validate_post_bash_command", return_value=[]):
+        with mock.patch("process_hooks.check_bash_post", return_value=[]):
             with pytest.raises(SystemExit) as exc:
                 main()
             assert exc.value.code == 0

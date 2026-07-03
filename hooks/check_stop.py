@@ -1,7 +1,7 @@
 """
-Shared Hook Logic: Stop Validator.
+Shared Hook Logic: Stop Checks.
 
-Validates the final assistant transcript before the agent stops.
+Returns advisory issues for the final transcript before the agent stops.
 Dependency-free so it can run under the system python used by Codex.
 """
 
@@ -47,8 +47,8 @@ def _extract_assistant_message(record: dict[str, Any]) -> str:
     return ""
 
 
-def validate_stop(transcript_path: str) -> list[str]:
-    """Validate the final stop transcript contents."""
+def check_stop(transcript_path: str) -> list[str]:
+    """Check the final stop transcript contents."""
     if not transcript_path:
         return []
 

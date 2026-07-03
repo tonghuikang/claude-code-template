@@ -28,13 +28,13 @@ from hook_models import (
     WebFetchToolInput,
     WriteToolInput,
 )
-from process_notification import process_notification
-from process_post_bash import validate_post_bash_command
-from process_post_edit import validate_edit_content
-from process_post_prompt import validate_user_prompt
-from process_pre_bash import validate_pre_bash_command
-from process_pre_webfetch import validate_webfetch_url
-from process_stop import validate_stop
+from check_bash_post import check_bash_post
+from check_bash_pre import check_bash_pre
+from check_edit import check_edit
+from check_prompt import check_prompt
+from check_stop import check_stop
+from check_webfetch import check_webfetch
+from notification import speak
 
 _HOOKS_BY_EVENT: dict[str, type[GenericHook]] = {
     "UserPromptSubmit": UserPromptSubmitHook,
@@ -66,7 +66,7 @@ def load_hook_input() -> GenericHook:
 
 
 def main():
-    """Route hook events to appropriate validators."""
+    """Route hook events to the appropriate checks."""
     # https://docs.claude.com/en/docs/claude-code/hooks#hook-input
     hook_input = load_hook_input()
 
@@ -74,43 +74,43 @@ def main():
     exit_one_messages = []
     exit_two_messages = []
 
-    # Route to appropriate validator based on hook_event_name + tool_name
+    # Route to the appropriate check based on hook_event_name + tool_name
     # Hook lifecycle: UserPromptSubmit -> PreToolUse -> Notification -> PostToolUse -> Stop
     if isinstance(hook_input, UserPromptSubmitHook):
         print(asdict(hook_input))  # Original prompt_validator behavior
         if hook_input.prompt:
-            exit_zero_messages = validate_user_prompt(hook_input.prompt)
+            exit_zero_messages = check_prompt(hook_input.prompt)
 
     elif isinstance(hook_input, PreToolUseHook):
         if hook_input.tool_name == "Bash":
             bash_input = BashToolInput.from_dict(hook_input.tool_input)
-            exit_two_messages = validate_pre_bash_command(bash_input.command)
+            exit_two_messages = check_bash_pre(bash_input.command)
 
         elif hook_input.tool_name == "WebFetch":
             webfetch_input = WebFetchToolInput.from_dict(hook_input.tool_input)
             if webfetch_input.url:
-                exit_two_messages = validate_webfetch_url(webfetch_input.url)
+                exit_two_messages = check_webfetch(webfetch_input.url)
 
     elif isinstance(hook_input, NotificationHook):
-        process_notification(hook_input.message)
+        speak(hook_input.message)
 
     elif isinstance(hook_input, PostToolUseHook):
         if hook_input.tool_name == "Bash":
             bash_input = BashToolInput.from_dict(hook_input.tool_input)
             if bash_input.command:
-                exit_two_messages = validate_post_bash_command(bash_input.command)
+                exit_two_messages = check_bash_post(bash_input.command)
 
         elif hook_input.tool_name == "Edit":
             edit_input = EditToolInput.from_dict(hook_input.tool_input)
             if edit_input.new_string or edit_input.file_path:
-                exit_two_messages = validate_edit_content(
+                exit_two_messages = check_edit(
                     edit_input.old_string, edit_input.new_string, edit_input.file_path
                 )
 
         elif hook_input.tool_name == "Write":
             write_input = WriteToolInput.from_dict(hook_input.tool_input)
             if write_input.content or write_input.file_path:
-                exit_two_messages = validate_edit_content(
+                exit_two_messages = check_edit(
                     "", write_input.content, write_input.file_path
                 )
 
@@ -118,8 +118,8 @@ def main():
         if hook_input.stop_hook_active:
             sys.exit(0)
         if hook_input.transcript_path:
-            exit_two_messages = validate_stop(hook_input.transcript_path)
-        process_notification(hook_input.last_assistant_message)
+            exit_two_messages = check_stop(hook_input.transcript_path)
+        speak(hook_input.last_assistant_message)
 
     # Handle exit codes and output
     for exit_zero_message in exit_zero_messages:
