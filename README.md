@@ -29,3 +29,20 @@ validators in `hooks/`.
   payload models, wired up in `.codex/hooks.json`
 - `skills/` — shared skills; `.claude/skills` and `.codex/skills` are symlinks
   to this directory
+
+## Notifications
+
+Notification and Stop events are spoken aloud via Kokoro TTS
+(`hooks/notify_kokoro.py`), played through `afplay` on macOS and
+`pw-play`/`aplay` on Linux. Loading torch and the Kokoro model costs ~5s, so
+the first notification spawns a daemon that keeps the model in memory and
+listens on a Unix socket; later notifications forward their message to it in
+under 0.2s. The daemon exits after 30 minutes without a message to release
+its ~500MB of memory.
+
+To silence a notification mid-speech, add a shush alias to your shell rc
+(killing only the player leaves the daemon warm):
+
+```zsh
+alias ss='pkill afplay; pkill pw-play; pkill aplay'
+```
