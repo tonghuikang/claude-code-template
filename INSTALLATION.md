@@ -25,7 +25,7 @@ From the repo root:
 uv sync
 ```
 
-This creates `.venv/` with the dependencies the hooks rely on (e.g. `pydantic`). The hooks in `.claude/settings.json` invoke `$CLAUDE_PROJECT_DIR/.venv/bin/python3` directly, so no activation is needed.
+This creates `.venv/` with the dependencies the hooks rely on (e.g. `kokoro` for notification TTS). The hooks in `.claude/settings.json` invoke `$CLAUDE_PROJECT_DIR/.venv/bin/python3` directly, so no activation is needed.
 
 ## Verify
 

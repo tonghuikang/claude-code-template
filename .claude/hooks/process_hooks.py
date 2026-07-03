@@ -11,11 +11,12 @@ https://github.com/anthropics/claude-code/tree/main/examples/hooks
 
 import json
 import sys
+from dataclasses import asdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "hooks"))
 
-from hook_models import (  # noqa: E402
+from hook_models import (
     BashToolInput,
     EditToolInput,
     GenericHook,
@@ -27,40 +28,39 @@ from hook_models import (  # noqa: E402
     WebFetchToolInput,
     WriteToolInput,
 )
-from process_notification import process_notification  # noqa: E402
-from process_post_bash import validate_post_bash_command  # noqa: E402
-from process_post_edit import validate_edit_content  # noqa: E402
-from process_post_prompt import validate_user_prompt  # noqa: E402
-from process_pre_bash import validate_pre_bash_command  # noqa: E402
-from process_pre_webfetch import validate_webfetch_url  # noqa: E402
-from process_stop import validate_stop  # noqa: E402
-from pydantic import ValidationError  # noqa: E402
+from process_notification import process_notification
+from process_post_bash import validate_post_bash_command
+from process_post_edit import validate_edit_content
+from process_post_prompt import validate_user_prompt
+from process_pre_bash import validate_pre_bash_command
+from process_pre_webfetch import validate_webfetch_url
+from process_stop import validate_stop
+
+_HOOKS_BY_EVENT: dict[str, type[GenericHook]] = {
+    "UserPromptSubmit": UserPromptSubmitHook,
+    "PreToolUse": PreToolUseHook,
+    "Notification": NotificationHook,
+    "PostToolUse": PostToolUseHook,
+    "Stop": StopHook,
+}
 
 
 def load_hook_input() -> GenericHook:
-    """Load and parse JSON input from stdin using pydantic."""
+    """Load and parse JSON input from stdin into a typed hook model."""
     try:
         raw_data = json.load(sys.stdin)
-        generic_hook = GenericHook(**raw_data)
+        generic_hook = GenericHook.from_dict(raw_data)
 
         # Route to specific hook model based on hook_event_name
-        if generic_hook.hook_event_name == "UserPromptSubmit":
-            return UserPromptSubmitHook(**raw_data)
-        elif generic_hook.hook_event_name == "PreToolUse":
-            return PreToolUseHook(**raw_data)
-        elif generic_hook.hook_event_name == "Notification":
-            return NotificationHook(**raw_data)
-        elif generic_hook.hook_event_name == "PostToolUse":
-            return PostToolUseHook(**raw_data)
-        elif generic_hook.hook_event_name == "Stop":
-            return StopHook(**raw_data)
-        else:
+        hook_cls = _HOOKS_BY_EVENT.get(generic_hook.hook_event_name)
+        if hook_cls is None:
             return generic_hook
+        return hook_cls.from_dict(raw_data)
 
     except json.JSONDecodeError as e:
         print(f"Error: Invalid JSON input: {e}", file=sys.stderr)
         sys.exit(1)
-    except ValidationError as e:
+    except (TypeError, AttributeError) as e:
         print(f"Error: Invalid hook input structure: {e}", file=sys.stderr)
         sys.exit(1)
 
@@ -77,17 +77,17 @@ def main():
     # Route to appropriate validator based on hook_event_name + tool_name
     # Hook lifecycle: UserPromptSubmit -> PreToolUse -> Notification -> PostToolUse -> Stop
     if isinstance(hook_input, UserPromptSubmitHook):
-        print(hook_input.model_dump())  # Original prompt_validator behavior
+        print(asdict(hook_input))  # Original prompt_validator behavior
         if hook_input.prompt:
             exit_zero_messages = validate_user_prompt(hook_input.prompt)
 
     elif isinstance(hook_input, PreToolUseHook):
         if hook_input.tool_name == "Bash":
-            bash_input = BashToolInput(**hook_input.tool_input)
+            bash_input = BashToolInput.from_dict(hook_input.tool_input)
             exit_two_messages = validate_pre_bash_command(bash_input.command)
 
         elif hook_input.tool_name == "WebFetch":
-            webfetch_input = WebFetchToolInput(**hook_input.tool_input)
+            webfetch_input = WebFetchToolInput.from_dict(hook_input.tool_input)
             if webfetch_input.url:
                 exit_two_messages = validate_webfetch_url(webfetch_input.url)
 
@@ -96,19 +96,19 @@ def main():
 
     elif isinstance(hook_input, PostToolUseHook):
         if hook_input.tool_name == "Bash":
-            bash_input = BashToolInput(**hook_input.tool_input)
+            bash_input = BashToolInput.from_dict(hook_input.tool_input)
             if bash_input.command:
                 exit_two_messages = validate_post_bash_command(bash_input.command)
 
         elif hook_input.tool_name == "Edit":
-            edit_input = EditToolInput(**hook_input.tool_input)
+            edit_input = EditToolInput.from_dict(hook_input.tool_input)
             if edit_input.new_string or edit_input.file_path:
                 exit_two_messages = validate_edit_content(
                     edit_input.old_string, edit_input.new_string, edit_input.file_path
                 )
 
         elif hook_input.tool_name == "Write":
-            write_input = WriteToolInput(**hook_input.tool_input)
+            write_input = WriteToolInput.from_dict(hook_input.tool_input)
             if write_input.content or write_input.file_path:
                 exit_two_messages = validate_edit_content(
                     "", write_input.content, write_input.file_path

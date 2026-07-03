@@ -5,9 +5,9 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "en-core-web-sm",
     "kaggle>=2.1.0",
     "kokoro>=0.9.4",
-    "pydantic>=2.12.1",
     "soundfile>=0.13.1",
 ]
 
@@ -15,9 +15,24 @@ dependencies = [
 dev = [
     "jupytext>=1.19.1",
     "kaggle>=2.1.0",
+    "mypy>=2.1.0",
     "pytest>=8.4.2",
     "ruff>=0.13.2",
 ]
 
 [tool.pytest.ini_options]
 testpaths = [".claude", "hooks"]
+
+[tool.mypy]
+# The dispatchers in .claude/hooks and .codex/hooks add <repo>/hooks to
+# sys.path at runtime; mirror that for import resolution. Run mypy per
+# directory (hooks/, .claude/hooks/, .codex/hooks/) — the dispatcher and
+# model modules share names across .claude and .codex.
+mypy_path = ["hooks"]
+
+[[tool.mypy.overrides]]
+module = ["kokoro", "soundfile"]
+ignore_missing_imports = true
+
+[tool.uv.sources]
+en-core-web-sm = { url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl" }

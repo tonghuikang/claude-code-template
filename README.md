@@ -23,7 +23,7 @@ validators in `hooks/`.
 
 - `hooks/` — validators, notification TTS, and their tests (dependency-free
   where Codex's system python needs them)
-- `.claude/hooks/` — Claude Code dispatcher (`process_hooks.py`) and pydantic
+- `.claude/hooks/` — Claude Code dispatcher (`process_hooks.py`) and dataclass
   payload models, wired up in `.claude/settings.json`
 - `.codex/hooks/` — Codex dispatcher (`process_hooks.py`) and dataclass
   payload models, wired up in `.codex/hooks.json`

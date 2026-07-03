@@ -13,14 +13,14 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "hooks"))
 
-from hook_models import (  # noqa: E402
+from hook_models import (
     GenericHook,
     NotificationHook,
     StopHook,
     parse_hook_payload,
 )
-from process_notification import process_notification  # noqa: E402
-from process_stop import validate_stop  # noqa: E402
+from process_notification import process_notification
+from process_stop import validate_stop
 
 
 def _debug_log(message: str) -> None:

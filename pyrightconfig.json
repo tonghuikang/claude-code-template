@@ -1,0 +1,9 @@
+{
+  "venvPath": ".",
+  "venv": ".venv",
+  "executionEnvironments": [
+    { "root": ".claude/hooks", "extraPaths": [".claude/hooks", "hooks"] },
+    { "root": ".codex/hooks", "extraPaths": [".codex/hooks", "hooks"] },
+    { "root": "hooks", "extraPaths": ["hooks"] }
+  ]
+}

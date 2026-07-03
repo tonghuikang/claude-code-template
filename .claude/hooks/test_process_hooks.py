@@ -44,6 +44,15 @@ def test_load_hook_input_invalid():
         assert exc.value.code == 1
 
 
+def test_load_hook_input_missing_required_field():
+    """A payload missing a required field exits 1 (dataclass construction raises TypeError)."""
+    mock_stdin = StringIO('{"hook_event_name": "UserPromptSubmit"}')  # missing 'prompt'
+    with mock.patch("sys.stdin", mock_stdin):
+        with pytest.raises(SystemExit) as exc:
+            load_hook_input()
+        assert exc.value.code == 1
+
+
 # Tests for UserPromptSubmit hook
 def test_main_user_prompt_submit():
     """Test routing to user prompt validator."""
