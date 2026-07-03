@@ -21,6 +21,8 @@ def validate_pre_bash_command(command: str) -> list[str]:
         and "push" in command
         and "--accelerator" not in command
     ):
-        issues.append("Please use --accelerator explicitly. Even if enable_gpu: true is true, you need to specify NvidiaRtxPro6000.")
+        issues.append(
+            "Please use --accelerator explicitly. Even if enable_gpu: true is true, you need to specify NvidiaRtxPro6000."
+        )
 
     return issues

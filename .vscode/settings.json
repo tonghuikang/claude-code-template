@@ -1,4 +1,8 @@
 {
   "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
-  "python.analysis.extraPaths": ["${workspaceFolder}/.claude/hooks"]
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/hooks",
+    "${workspaceFolder}/.claude/hooks",
+    "${workspaceFolder}/.codex/hooks"
+  ]
 }

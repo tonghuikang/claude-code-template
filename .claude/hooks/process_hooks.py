@@ -1,7 +1,8 @@
 """
 Claude Code Hook: Centralized Hook Processing.
 
-Routes hook events to appropriate validators.
+Thin wrapper: parses Claude Code hook payloads and routes them to the
+shared business logic in the repository-level hooks/ directory.
 
 Adapted from:
 https://github.com/anthropics/claude-code/tree/main/examples/hooks
@@ -10,8 +11,11 @@ https://github.com/anthropics/claude-code/tree/main/examples/hooks
 
 import json
 import sys
+from pathlib import Path
 
-from hook_models import (
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "hooks"))
+
+from hook_models import (  # noqa: E402
     BashToolInput,
     EditToolInput,
     GenericHook,
@@ -23,14 +27,14 @@ from hook_models import (
     WebFetchToolInput,
     WriteToolInput,
 )
-from process_notification import process_notification
-from process_post_bash import validate_post_bash_command
-from process_post_edit import validate_edit_content
-from process_post_prompt import validate_user_prompt
-from process_pre_bash import validate_pre_bash_command
-from process_pre_webfetch import validate_webfetch_url
-from process_stop import validate_stop
-from pydantic import ValidationError
+from process_notification import process_notification  # noqa: E402
+from process_post_bash import validate_post_bash_command  # noqa: E402
+from process_post_edit import validate_edit_content  # noqa: E402
+from process_post_prompt import validate_user_prompt  # noqa: E402
+from process_pre_bash import validate_pre_bash_command  # noqa: E402
+from process_pre_webfetch import validate_webfetch_url  # noqa: E402
+from process_stop import validate_stop  # noqa: E402
+from pydantic import ValidationError  # noqa: E402
 
 
 def load_hook_input() -> GenericHook:

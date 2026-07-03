@@ -1,14 +1,26 @@
-"""Codex hook dispatcher for Stop and Notification events."""
+"""Codex hook dispatcher for Stop and Notification events.
+
+Thin wrapper: parses Codex hook payloads and routes them to the shared
+business logic in the repository-level hooks/ directory.
+"""
 
 from __future__ import annotations
 
 import json
 import sys
+from pathlib import Path
 from typing import Any
 
-from hook_models import GenericHook, NotificationHook, StopHook, parse_hook_payload
-from process_notification import process_notification
-from process_stop import validate_stop
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "hooks"))
+
+from hook_models import (  # noqa: E402
+    GenericHook,
+    NotificationHook,
+    StopHook,
+    parse_hook_payload,
+)
+from process_notification import process_notification  # noqa: E402
+from process_stop import validate_stop  # noqa: E402
 
 
 def _debug_log(message: str) -> None:

@@ -1,3 +1,6 @@
+approval_policy = "on-request"
+approvals_reviewer = "auto_review"
+
 [mcp_servers.puppeteer]
 command = "npx"
 args = ["-y", "@modelcontextprotocol/server-puppeteer"]
