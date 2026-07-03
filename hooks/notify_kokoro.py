@@ -1,9 +1,10 @@
-"""Speak a notification message via Kokoro TTS, played through `aplay`."""
+"""Speak a notification message via Kokoro TTS, played through the platform's audio player."""
 
 import subprocess
 import shutil
 import sys
 import tempfile
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -15,6 +16,7 @@ SAMPLE_RATE = 24000
 
 def _play_wav(path: Path) -> None:
     players = [
+        ["afplay", str(path)],
         ["pw-play", str(path)],
         ["aplay", "-q", str(path)],
     ]
@@ -33,6 +35,9 @@ def _play_wav(path: Path) -> None:
 
 
 def main() -> None:
+    # Torch emits harmless UserWarning/FutureWarning noise when Kokoro builds
+    # its model; nothing here is actionable for a TTS subprocess.
+    warnings.simplefilter("ignore")
     message = " ".join(sys.argv[1:]).strip()
     if not message:
         return

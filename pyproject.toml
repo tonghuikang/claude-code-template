@@ -6,9 +6,9 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "kaggle>=2.1.0",
-    "kokoro>=0.9.4 ; sys_platform == 'linux'",
+    "kokoro>=0.9.4",
     "pydantic>=2.12.1",
-    "soundfile>=0.13.1 ; sys_platform == 'linux'",
+    "soundfile>=0.13.1",
 ]
 
 [dependency-groups]
