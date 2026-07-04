@@ -46,3 +46,19 @@ To silence a notification mid-speech, add a shush alias to your shell rc
 ```zsh
 alias ss='pkill afplay; pkill pw-play; pkill aplay'
 ```
+
+To mute narration entirely for an hour (e.g. before a call), add `ssn`. It
+kills any in-progress playback and writes the current time to
+`~/.narrate_mute`; `speak()` in `hooks/notification.py` checks that file and
+stays quiet until the hour is up (missing/stale file means narrate):
+
+```zsh
+alias ssn='pkill afplay; pkill pw-play; pkill aplay; date +%s > ~/.narrate_mute && echo "narration muted until $(date -v+1H)"'
+```
+
+To lift the mute early, add `ssy`. It deletes `~/.narrate_mute`, which is the
+same as letting the hour expire:
+
+```zsh
+alias ssy='rm -f ~/.narrate_mute && echo "narration unmuted"'
+```
